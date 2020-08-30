@@ -50,9 +50,14 @@ public class UserController {
         return new ResponseEntity<>(_user, HttpStatus.OK);
     }
 
-    @PutMapping
-    public String updateUser() {
-        return "updateUser was called";
+    @PutMapping (path = "/{userId}")
+    public ResponseEntity<User> updateUser(@PathVariable String userId, @RequestBody User user) {
+        if (_users.containsKey(userId)) {
+            return new ResponseEntity<>(_users.get(userId), HttpStatus.OK);
+        }
+        else
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
     }
 
     @DeleteMapping

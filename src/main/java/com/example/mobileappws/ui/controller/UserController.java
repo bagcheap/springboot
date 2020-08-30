@@ -6,24 +6,29 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 
 @RestController
 @RequestMapping("users") //http://localhost:8080/users
 public class UserController {
 
+    Map<String, User> _users = new HashMap<String, User>();
+
     @GetMapping
-    public String getUsers(@RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "limit", defaultValue = "25") int limit) {
-        return "getUser with page= " + page + " and limit=" + limit + " was called";
+    public ResponseEntity<Map<String, User>> getUsers(@RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "limit", defaultValue = "25") int limit) {
+        return new ResponseEntity<Map<String, User>>(_users, HttpStatus.OK);
     }
 
     @GetMapping(path = "/{userId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<User> getUser(@PathVariable String userId) {
-        User user = new User();
-        user.setFirstName("Angus");
-        user.setEmail("spare_brain@yahoo.com");
-        user.setLastName("Bagchee");
-        user.setUserId("123");
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+        if (_users.containsKey(userId)) {
+            return new ResponseEntity<>(_users.get(userId), HttpStatus.OK);
+        }
+        else
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping(
@@ -35,7 +40,14 @@ public class UserController {
                     MediaType.APPLICATION_JSON_VALUE}
     )
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+        String _id = UUID.randomUUID().toString();
+        User _user = new User();
+        _user.setFirstName(user.getFirstName());
+        _user.setLastName(user.getLastName());
+        _user.setEmail(user.getEmail());
+        _user.setUserId(_id);
+        _users.put(_id, _user);
+        return new ResponseEntity<>(_user, HttpStatus.OK);
     }
 
     @PutMapping

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class UserController {
         _user.setFirstName(user.getFirstName());
         _user.setLastName(user.getLastName());
         _user.setEmail(user.getEmail());
+        _user.setPassword(user.getPassword());
         _user.setUserId(_id);
         _users.put(_id, _user);
         return new ResponseEntity<>(_user, HttpStatus.OK);
@@ -53,6 +55,12 @@ public class UserController {
     @PutMapping (path = "/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable String userId, @RequestBody User user) {
         if (_users.containsKey(userId)) {
+            User userBeingModified = _users.get(userId);
+            if (user.getFirstName() != null) userBeingModified.setFirstName(user.getFirstName());
+            if (user.getLastName() != null) userBeingModified.setLastName(user.getLastName());
+            if (user.getEmail() != null) userBeingModified.setEmail(user.getEmail());
+            if (user.getPassword() != null) userBeingModified.setPassword(user.getPassword());
+            _users.replace(userId, userBeingModified);
             return new ResponseEntity<>(_users.get(userId), HttpStatus.OK);
         }
         else

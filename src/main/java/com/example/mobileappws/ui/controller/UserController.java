@@ -16,6 +16,8 @@ import java.util.UUID;
 @RequestMapping("users") //http://localhost:8080/users
 public class UserController {
 
+    private static boolean DEBUG=true;
+
     Map<String, User> _users = new HashMap<String, User>();
 
     @GetMapping
@@ -25,6 +27,7 @@ public class UserController {
 
     @GetMapping(path = "/{userId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<User> getUser(@PathVariable String userId) {
+        if(DEBUG) throw new NullPointerException();
         if (_users.containsKey(userId)) {
             return new ResponseEntity<>(_users.get(userId), HttpStatus.OK);
         }

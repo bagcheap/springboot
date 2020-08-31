@@ -69,4 +69,11 @@ public class UserServiceImpl implements UserService {
     public Map getAllUsers() {
         return _users;
     }
+
+    @Override
+    public boolean hasUser(String userId) {
+        if (_users.containsKey(userId)) return true;
+        else
+            return false;
+    }
 }

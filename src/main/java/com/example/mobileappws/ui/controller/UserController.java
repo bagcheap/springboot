@@ -18,23 +18,28 @@ import java.util.UUID;
 @RequestMapping("users") //http://localhost:8080/users
 public class UserController {
 
-    private static boolean DEBUG=true;
+    private static boolean DEBUG=false;
 
-    Map<String, User> _users = new HashMap<String, User>();
+//    Map<String, User> _users = new HashMap<String, User>();
 
     @Autowired
     UserService userService;
 
     @GetMapping
     public ResponseEntity<Map<String, User>> getUsers(@RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "limit", defaultValue = "25") int limit) {
-        return new ResponseEntity<Map<String, User>>(_users, HttpStatus.OK);
+        Map allUsers = userService.getAllUsers();
+        if (allUsers == null || allUsers.size() < 1)
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        else
+            return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
 
     @GetMapping(path = "/{userId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<User> getUser(@PathVariable String userId) {
         if(DEBUG) throw new NullPointerException();
-        if (_users.containsKey(userId)) {
-            return new ResponseEntity<>(_users.get(userId), HttpStatus.OK);
+        Map allUsers = userService.getAllUsers();
+        if (allUsers.containsKey(userId)) {
+            return new ResponseEntity<>((User)allUsers.get(userId), HttpStatus.OK);
         }
         else
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -55,9 +60,13 @@ public class UserController {
 
     @PutMapping (path = "/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable String userId, @RequestBody User user) {
+
+        if (!userService.hasUser(userId))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
         User userModified = userService.updateUser(userId, user);
         if (userModified != null) {
-            return new ResponseEntity<>(_users.get(userId), HttpStatus.OK);
+            return new ResponseEntity<>(userModified, HttpStatus.OK);
         }
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -66,12 +75,11 @@ public class UserController {
 
     @DeleteMapping (path = "/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable String userId) {
-        if (_users.containsKey(userId)) {
-            _users.remove(userId);
-            return new ResponseEntity<String>("Deleted user with ID " + userId, HttpStatus.OK);
-        }
-        else
-            return new ResponseEntity<String>("User ID " + userId + " not found", HttpStatus.OK);
+
+        if (!userService.hasUser(userId))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<String>(userService.deleteUser(userId), HttpStatus.OK);
     }
 
 }

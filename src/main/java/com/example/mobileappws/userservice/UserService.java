@@ -9,4 +9,5 @@ public interface UserService {
     String deleteUser(String userId);
     User updateUser(String userId, User updatedUser);
     Map getAllUsers();
+    boolean hasUser(String userId);
 }

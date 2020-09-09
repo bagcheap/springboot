@@ -11,6 +11,7 @@ import org.modelmapper.spi.MatchingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -19,22 +20,26 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     UserRepository userRepository;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
     public UserDto createUser(UserDto userDetails) {
         userDetails.setUserId(UUID.randomUUID().toString());
+        userDetails.setEncryptedPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
+
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        UserEntity userEntity = modelMapper.map(userDetails, UserEntity.class);
-        userEntity.setEncryptedPassword("TEST");
-        userRepository.save(userEntity);
 
-        UserDto userCreated = modelMapper.map(userEntity, UserDto.class);
+        UserEntity _userEntity = modelMapper.map(userDetails, UserEntity.class);
+
+        userRepository.save(_userEntity);
+        UserDto userCreated = modelMapper.map(_userEntity, UserDto.class);
 
         return userCreated;
     }
